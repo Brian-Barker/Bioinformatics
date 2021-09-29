@@ -27,6 +27,6 @@ abline(h=median(as.matrix(logcounts)), col = "blue")
 
 library(ggplot2)
 library(ggfortify)
-rlogcounts <- rlog(countdata)
+rlogcounts <- log2(countdata)
 pcDat <- prcomp(t(logcounts))
 autoplot(pcDat)
