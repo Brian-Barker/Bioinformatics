@@ -1,10 +1,13 @@
-data_file <- "GSE167171_AllCounts.txt/GSE167171_AllCounts.txt"
+data_file <- "data/GSE167171_AllCounts.txt"
 
 data <- read.table(data_file, TRUE, sep="")
 
-countdata <- readRDS(file="./GSE167171_AllCounts.txt/countdata(2).Rda", refhook = NULL)
+countdata <- read.table("./data/countdata.txt")
 countdata <- countdata[,-1]
 rownames(countdata) <- countdata[,1]
+
+groups <- read.table("./data/groups.txt")
+groups <- groups[1:90,]
 
 dim(countdata)
 keep <- rowSums(countdata) > 5
@@ -27,6 +30,6 @@ abline(h=median(as.matrix(logcounts)), col = "blue")
 
 library(ggplot2)
 library(ggfortify)
-rlogcounts <- log2(countdata)
+rlogcounts <- log2(counts)
 pcDat <- prcomp(t(logcounts))
-autoplot(pcDat)
+autoplot(pcDat, data = groups, colour="Combined")
