@@ -15,9 +15,9 @@ countdata <- countdata[keep,]
 dim(countdata)
 
 librarySizes <- colSums(countdata)
-barplot(librarySizes, 
-        names=names(librarySizes), 
-        las=2, 
+barplot(librarySizes,
+        names=names(librarySizes),
+        las=2,
         main="Barplot of library sizes")
 
 logcounts <- log2(countdata + 1)
@@ -52,4 +52,19 @@ EnhancedVolcano(res,
                 ylim = c(0, 8))
 
 differentlyExpressedGenes <- res[which(res[["pvalue"]] < 10e-3 & res[["log2FoldChange"]] > .3),]
-write.table(differentlyExpressedGenes, "./data/DifferentlyExpressedGenes.txt") 
+write.table(differentlyExpressedGenes, "./data/DifferentlyExpressedGenes.txt")
+
+library(M3C)
+tsne(logcounts, labels=groups[,4], text=groups[,2])
+
+
+require(DOSE)
+require(clusterProfiler)
+orange <- search_kegg_organism("cic", by = "kegg_code")
+dim(orange)
+head(orange)
+data(geneList, package="DOSE")
+k <- enrichMKEGG(gene = "CICLE_v10004626mg",
+               organism = 'cic',
+               pvalueCutoff = 0.05)
+head(k)
