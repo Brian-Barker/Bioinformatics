@@ -52,4 +52,4 @@ EnhancedVolcano(res,
                 ylim = c(0, 8))
 
 differentlyExpressedGenes <- res[which(res[["pvalue"]] < 10e-3 & res[["log2FoldChange"]] > .3),]
-write.table(differentlyExpressedGenes, "./data/DifferentlyExpressedGenes.txt")
+write.table(differentlyExpressedGenes, "./data/DifferentlyExpressedGenes.txt") 
