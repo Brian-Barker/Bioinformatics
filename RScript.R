@@ -34,22 +34,18 @@ rlogcounts <- log2(counts)
 pcDat <- prcomp(t(logcounts))
 autoplot(pcDat, data = groups, colour="Month", alpha="Experimental", shape="Experimental") + scale_alpha_discrete(range=c(1,.5))
 
-dds <- DESeqDataSetFromMatrix(countData = countdata, colData = groups, design = ~Experimental + Month)
-dds <- DESeq(dds, betaPrior = FALSE)
+
+library(M3C)
+tsne(logcounts, labels=groups[,4], text=groups[,2])
 
 
-res <- results(dds,
-               contrast = c('Experimental','Experimental','Control'))
-res <- lfcShrink(dds,
-                 contrast = c('Experimental','Experimental','Control'), res=res, type = 'normal')
-EnhancedVolcano(res,
-                lab = rownames(res),
-                x = 'log2FoldChange',
-                y = 'pvalue',
-                pCutoff = 10e-4,
-                FCcutoff = 0.3,
-                xlim = c(-1, 1),
-                ylim = c(0, 8))
-
-differentlyExpressedGenes <- res[which(res[["pvalue"]] < 10e-3 & res[["log2FoldChange"]] > .3),]
-write.table(differentlyExpressedGenes, "./data/DifferentlyExpressedGenes.txt")
+require(DOSE)
+require(clusterProfiler)
+orange <- search_kegg_organism("cic", by = "kegg_code")
+dim(orange)
+head(orange)
+data(geneList, package="DOSE")
+k <- enrichMKEGG(gene = "CICLE_v10004626mg",
+               organism = 'cic',
+               pvalueCutoff = 0.05)
+head(k)
