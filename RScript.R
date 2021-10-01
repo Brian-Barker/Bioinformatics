@@ -33,3 +33,20 @@ library(ggfortify)
 rlogcounts <- log2(counts)
 pcDat <- prcomp(t(logcounts))
 autoplot(pcDat, data = groups, colour="Month", alpha="Experimental", shape="Experimental") + scale_alpha_discrete(range=c(1,.5))
+
+dds <- DESeqDataSetFromMatrix(countData = countdata, colData = groups, design = ~Experimental + Month)
+dds <- DESeq(dds, betaPrior = FALSE)
+
+
+res <- results(dds,
+               contrast = c('Experimental','Experimental','Control'))
+res <- lfcShrink(dds,
+                 contrast = c('Experimental','Experimental','Control'), res=res, type = 'normal')
+EnhancedVolcano(res,
+                lab = rownames(res),
+                x = 'log2FoldChange',
+                y = 'pvalue',
+                pCutoff = 10e-4,
+                FCcutoff = 0.3,
+                xlim = c(-1, 1),
+                ylim = c(0, 8))
