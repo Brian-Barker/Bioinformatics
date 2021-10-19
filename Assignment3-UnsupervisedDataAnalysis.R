@@ -17,6 +17,7 @@ groups <- groups[1:90,]
 #ayo what is the metadata is that the groups
 
 #1a
-top5k <- apply(countdata, FUN=var, MARGIN=1)
+top5k <- apply(countdata, FUN=mad, MARGIN=1)
 top5k <- sort(top5k, decreasing=TRUE)
 top5k <- top5k[1:5000]
+top5k
