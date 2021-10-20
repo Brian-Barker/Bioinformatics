@@ -15,6 +15,7 @@ groups <- read.table("./data/groups.txt")
 groups <- groups[1:90,]
 
 #ayo what is the metadata is that the groups
+#Yeah, though each application tends to need more metadata fields so make sure groups actually contains what you need
 
 #1a
 top5k <- apply(countdata, FUN=mad, MARGIN=1)
