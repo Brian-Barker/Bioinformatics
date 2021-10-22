@@ -23,78 +23,117 @@ top5k <- sort(top5k, decreasing=TRUE)
 top5k <- top5k[1:5000]
 top5k
 
-#1 Brian - Heirarchical
-install.packages("class")
-library(class)
-install.packages("hclust")
-install.packages("rafalib")
-library(rafalib)
-
+#1 Brian - Gaussian Mixture Models
+install.packages("mclust")
+library(mclust)
 top5kvar <- apply(countdata, FUN=var, MARGIN=1)
 top5kvar <- sort(top5kvar, decreasing=TRUE)
 top5kvar <- top5kvar[1:5000]
-top5kvarframe <- as.data.frame(top5kvar)
+top5kvar
+top5kvarframe = as.data.frame(top5kvar)
+mod <- mclust::Mclust(top5kvar)
+dr <- MclustDR(mod)
 
+clPairs(top5kvar, groups$Experimental)
+
+#Paige - PAM Clustering
 countframe = as.data.frame(countdata)
 top5kcountdata <- countframe[rownames(countframe) %in% rownames(top5kvarframe),]
 
+install.packages(c("cluster", "factoextra"))
+library(cluster)
+library(factoextra)
+
+pamx <- pam(top5kcountdata, 5, metric = "euclidean")
+plot(pamx)
+
+top10 <- apply(countdata, FUN=mad, MARGIN=1)
+top10 <- sort(top1k, decreasing=TRUE)
+top10 <- top10[1:10]
+top10varframe = as.data.frame((top10var))
+top10countdata <- countframe[rownames(countframe) %in% rownames(top10varframe),]
+top10norm <- as.data.frame(lapply(top10countdata, normalize))
 normalize <- function(x) {
   return ((x - min(x)) / (max(x) - min(x))) }
+colnames(top10norm) <- groups$Combined
+rownames(top10norm) <- rownames(top10countdata)
 
+t_top10norm <- as.data.frame(t(top10norm))
+
+
+
+top100 <- apply(countdata, FUN=mad, MARGIN=1)
+top100 <- sort(top1k, decreasing=TRUE)
+top100 <- top100[1:100]
+top100varframe = as.data.frame((top100var))
+top100countdata <- countframe[rownames(countframe) %in% rownames(top100varframe),]
+top100norm <- as.data.frame(lapply(top100countdata, normalize))
+colnames(top100norm) <- groups$Combined
+rownames(top100norm) <- rownames(top100countdata)
+
+t_top100norm <- as.data.frame(t(top100norm))
+
+top5k <- apply(countdata, FUN=mad, MARGIN=1)
+top5k <- sort(top5k, decreasing=TRUE)
+top5k <- top5k[1:5000]
+top5kvarframe = as.data.frame((top5kvar))
+top5kcountdata <- countframe[rownames(countframe) %in% rownames(top5kvarframe),]
 top5knorm <- as.data.frame(lapply(top5kcountdata, normalize))
 colnames(top5knorm) <- groups$Combined
 rownames(top5knorm) <- rownames(top5kcountdata)
 
 t_top5knorm <- as.data.frame(t(top5knorm))
 
-clusters <- hclust(dist(t_top5knorm))
-clusterCut <- cutree(clusters, 7)
 
-myplclust(clusters, lab.col=clusterCut, cex=0.5)
+top10k <- apply(countdata, FUN=mad, MARGIN=1)
+top10k <- sort(top10k, decreasing=TRUE)
+top10k <- top10k[1:10000]
+top10kvarframe = as.data.frame((top10kvar))
+top10kcountdata <- countframe[rownames(countframe) %in% rownames(top10kvarframe),]
+top10knorm <- as.data.frame(lapply(top10kcountdata, normalize))
+colnames(top10knorm) <- groups$Combined
+rownames(top10knorm) <- rownames(top10kcountdata)
 
-pca <- prcomp(t_top5knorm, scale=TRUE)
-autoplot(pca, col=clusterCut)
+t_top10knorm <- as.data.frame(t(top10knorm))
 
 
-hc_dend <- myplclust(clusters, lab.col=clusterCut, cex=0.5)
-col_labels <- get_leaves_branches_col(hc_dend)
+top1k <- apply(countdata, FUN=mad, MARGIN=1)
+top1k <- sort(top1k, decreasing=TRUE)
+top1k <- top1k[1:1000]
+top1kvarframe = as.data.frame((top1kvar))
+top1kcountdata <- countframe[rownames(countframe) %in% rownames(top1kvarframe),]
+top1knorm <- as.data.frame(lapply(top1kcountdata, normalize))
+colnames(top1knorm) <- groups$Combined
+rownames(top1knorm) <- rownames(top1kcountdata)
+
+t_top1knorm <- as.data.frame(t(top1knorm))
+
+plotting <- t_top5knorm
+#5k   2
+#100  4
+#1k   2
+#10k  2
+#10   4
+
+pam.res <- pam(plotting, k=4)
+fviz_cluster(pam.res, geom = "point", ellipse.type = "norm")
+
+fviz_nbclust(plotting, pam, method = "wss") +
+  geom_vline(xintercept = 4, linetype = 2)+
+  labs(subtitle = "Elbow method")
+
+fviz_nbclust(plotting, pam, method = "silhouette")+
+  labs(subtitle = "Silhouette method")
+
+
 library(RColorBrewer)
-h <- heatmap(as.matrix(clusters), Rowv=hc_dend, Colv = hc_dend, col = colorRampPalette(brewer.pal(8, "Oranges"))(12))
+h <- heatmap(as.matrix(pam.res), col = colorRampPalette(brewer.pal(8, "Oranges"))(12))
 legend(x="topleft", legend = c("Min", "Ave", "Max"), fill=colorRampPalette(brewer.pal(8, "Oranges"))(3))
 
 
+heatmap(as.matrix(top5knorm, name = "mat", row_split = paste0("pam", pam.res$clustering))
 
-install.packages("ggalluvial")
-library(ggalluvial)
+mat <- as.matrix(top5knorm), nrow = 20)
+PAM.hm(as.matrix(top5knorm), cluster.number = 3)
 
-ggplot(gene_number_clusters,
-       aes(y=1, axis1=Tool, axis2=Gene_Count)) +
-  geom_alluvium(aes(fill=Clusters)) +
-  geom_stratum() +
-  geom_text(stat = "stratum",
-            aes(label = after_stat(stratum))) +
-  scale_x_discrete(limits = c("Survey", "Response"),
-                   expand = c(0.15, 0.05))
-
-CCPlus <- c(1, 2, 3, 2, 2, 4, 4, 3, 3, 3, 5, 3, 4, 3, 4, 3, 3, 2, 2, 4, 3, 4, 3, 3, 4, 1, 2, 5, 3, 3, 5, 1, 3, 4, 4, 5, 1, 4, 4, 4, 3, 3, 1, 6, 5, 1, 4, 6, 6, 6, 1, 4, 3, 6, 4, 3, 3, 4, 4, 6, 4, 4, 3, 4, 1, 3, 4, 2, 2, 2, 2, 4, 7, 1, 3, 3, 4, 4, 4, 2, 2, 2, 2, 3, 2, 4, 2, 3, 7, 5)
-PAM <- c(1, 2, 2, 1, 1, 1, 2, 3, 2, 1, 4, 4, 2, 1, 3, 3, 2, 1, 1, 3, 1, 2, 3, 1, 1, 2, 1, 5, 3, 1, 1, 2, 1, 1, 1, 3, 4, 1, 4, 3, 3, 4, 4, 1, 1, 1, 3, 3, 3, 4, 4, 3, 4, 4, 3, 3, 1, 1, 4, 4, 4, 3, 4, 4, 3, 4, 2, 1, 2, 1, 1, 2, 4, 2, 2, 1, 1, 1, 2, 1, 2, 2, 2, 2, 1, 2, 3, 4, 1, 1)
-
-chisq.test(table(groups$Group, groups$PAM))
-chisq.test(table(groups$Experimental, groups$PAM))
-chisq.test(table(groups$Month, groups$PAM))
-
-p_values <- c(.1379, .3336, .2656, .41, .04043, .1824, .003883, .00007761, .00006631, .1806, 0, .06633)
-p_adj <- p.adjust(p_values, "bonferroni")
-
-enrichment[1,] <- c("Hclust vs treatment", 1)
-enrichment[2,] <- c("CCPlus vs treatment", 1)
-enrichment[3,] <- c("PAM vs treatment", 1)
-enrichment[4,] <- c("Hclust vs binary treatment", 1)
-enrichment[5,] <- c("CCPlus vs binary treatment", 0.48516)
-enrichment[6,] <- c("PAM vs binary treatment", 1)
-enrichment[7,] <- c("Hclust vs sample age", .046596)
-enrichment[8,] <- c("CCPlus vs sample age", .00093132)
-enrichment[9,] <- c("PAM vs sample age", .00079572)
-enrichment[10,] <- c("Hclust vs CCPlus", 1)
-enrichment[11,] <- c("Hclust vs PAM", 0)
-enrichment[12,] <- c("CCPlus vs PAM", .79596)
+       
