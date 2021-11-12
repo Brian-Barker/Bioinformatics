@@ -44,6 +44,7 @@ BiocManager::install("EnhancedVolcano")
 library(DESeq2)
 library(EnhancedVolcano)
 
+# --- Volcano ---
 create_volcano <- function(counts_, groups_, title_) {
   dds <- DESeqDataSetFromMatrix(countData = counts_, colData = groups_, design = ~Experimental)
   dds <- DESeq(dds, betaPrior = FALSE)
@@ -67,3 +68,13 @@ create_volcano <- function(counts_, groups_, title_) {
 create_volcano(month2counts, month2groups, "Month 2")
 create_volcano(month4counts, month4groups, "Month 4")
 create_volcano(month8counts, month8groups, "Month 8")
+
+# --- chisquared ---
+
+month2pvals <- c(1, 2, 1, 1, 3, 3, 4, 2, 2, 5, 4, 3, 2, 3, 4, 2, 1, 1, 3, 4, 3, 2, 2, 3, 5, 6, 3, 4, 2, 3, 5, 2, 3)
+month4pvals <- c(1, 2, 3, 1, 4, 4, 4, 5, 5, 1, 6, 3, 4, 4, 5, 5, 5, 1, 4, 5, 5, 4, 5, 5, 4, 4, 6, 4, 4, 5, 4, 1, 5, 4)
+month8pvals <- c(1, 2, 3, 2, 4, 5, 6, 5, 5, 4, 6, 4, 2, 1, 1, 3, 5, 3, 4, 3, 5, 5, 5)
+
+chisq.test(table(month2groups[,1], month2pvals))
+chisq.test(table(month4groups[,1], month4pvals))
+chisq.test(table(month8groups[,1], month8pvals))
